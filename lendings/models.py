@@ -15,5 +15,8 @@ class Lending(models.Model):
     borrower_email = models.EmailField()
     borrowed_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField()
-    returned_date = models.DateTimeField(null=True)
+    returned_date = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    def __str__(self):
+        return f"{self.book_copy.book.title} - {self.borrower_name}"
