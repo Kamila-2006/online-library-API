@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from authors.serializers import AuthorSerializer
 from .models import Genre, Book
 from authors.models import Author
@@ -11,23 +13,38 @@ class GenreSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class BookSerializer(serializers.ModelSerializer):
-    genre_id = serializers.PrimaryKeyRelatedField(
+    genre = serializers.PrimaryKeyRelatedField(
         queryset = Genre.objects.all(),
-        source = 'genre',
-        write_only = True
     )
-    authors_ids = serializers.PrimaryKeyRelatedField(
+    authors = serializers.PrimaryKeyRelatedField(
         queryset = Author.objects.all(),
-        source = 'authors',
         many = True,
-        write_only = True,
+        required = True,
     )
-    genre = GenreSerializer(read_only=True)
-    authors = AuthorSerializer(many=True, read_only=True)
+    genre_detail = GenreSerializer(source='genre', read_only=True)
+    authors_detail = AuthorSerializer(source='authors', many=True, read_only=True)
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'authors_ids', 'genre', 'genre_id', 'isbn', 'published_date', 'description', 'page_count', 'language']
+        fields = ['id', 'title', 'authors', 'authors_detail', 'genre', 'genre_detail', 'isbn', 'published_date', 'description', 'page_count', 'language']
         read_only_fields = ['id']
 
-    #добавить функции чтоб автор создавался и изменялся правильно
+    def create(self, validated_data):
+        authors = validated_data.pop('authors')
+        book = Book.objects.create(**validated_data)
+        book.authors.set(authors)
+        return book
+
+    def update(self, instance, validated_data):
+        authors = validated_data.pop('authors')
+
+        if not authors:
+            raise ValidationError({'authors': 'У книги должен быть хотя бы один автор!'})
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.authors.set(authors)
+        instance.save()
+        return instance
+
+    #добавить счет копий книги
