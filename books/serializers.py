@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
 from authors.serializers import AuthorSerializer
 from .models import Genre, Book
 from authors.models import Author
@@ -13,6 +12,8 @@ class GenreSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class BookSerializer(serializers.ModelSerializer):
+    copies_available = serializers.SerializerMethodField()
+
     genre = serializers.PrimaryKeyRelatedField(
         queryset = Genre.objects.all(),
     )
@@ -26,8 +27,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'authors_detail', 'genre', 'genre_detail', 'isbn', 'published_date', 'description', 'page_count', 'language']
-        read_only_fields = ['id']
+        fields = ['id', 'title', 'authors', 'authors_detail', 'genre', 'genre_detail', 'isbn', 'published_date', 'description', 'page_count', 'language', 'copies_available']
+        read_only_fields = ['id', 'copies_available', 'genre_detail', 'authors_detail']
 
     def create(self, validated_data):
         authors = validated_data.pop('authors')
@@ -47,4 +48,6 @@ class BookSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    #добавить счет копий книги
+    def get_copies_available(self, obj):
+        return obj.copies.filter(is_available=True).count()
+
