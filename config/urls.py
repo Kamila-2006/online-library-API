@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/authors/', include('authors.urls', namespace='authors')),
     path('api/books/', include('books.urls', namespace='books')),
     path('api/copies/', include('copies.urls', namespace='copies')),
+    path('api/lendings/', include('lendings.urls', namespace='lendings')),
 ]
