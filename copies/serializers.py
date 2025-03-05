@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Copy
-from books.serializers import BookSerializer
-from books.models import Book
+from books.serializers import BookShortSerializer
 from lendings.models import Lending
 
 
@@ -17,18 +16,14 @@ class LendingHistorySerializer(serializers.ModelSerializer):
         fields = ['id', 'borrower_name', 'borrowed_date', 'returned_date', 'status']
 
 class BookCopySerializer(serializers.ModelSerializer):
-    book = serializers.PrimaryKeyRelatedField(
-        queryset = Book.objects.all(),
-        write_only = True
-    )
-    book_detail = BookSerializer(source='book', read_only=True)
+    book = BookShortSerializer()
 
     current_lending = serializers.SerializerMethodField()
     lending_history = serializers.SerializerMethodField()
 
     class Meta:
         model = Copy
-        fields = ['id', 'book', 'book_detail', 'inventory_number', 'condition', 'is_available', 'added_date', 'current_lending', 'lending_history']
+        fields = ['id', 'book', 'inventory_number', 'condition', 'is_available', 'added_date', 'current_lending', 'lending_history']
         read_only_fields = ['id', 'added_date', 'current_lending', 'lending_history']
 
     def get_current_lending(self, obj):
@@ -40,10 +35,3 @@ class BookCopySerializer(serializers.ModelSerializer):
     def get_lending_history(self, obj):
         lendings = Lending.objects.filter(book_copy=obj).order_by('-borrowed_date')
         return LendingHistorySerializer(lendings, many=True).data
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        if self.context.get('short_version'):
-            data.pop('book_detail', None)
-        return data

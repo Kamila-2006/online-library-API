@@ -19,5 +19,5 @@ class AuthorBooksView(APIView):
     def get(self, request, pk):
         author = get_object_or_404(Author, pk=pk)
         books = author.books.all()
-        serializer = BookSerializer(books, many=True, context={'short_version': True})
+        serializer = BookSerializer(books, many=True)
         return Response(serializer.data, status=200)

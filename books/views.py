@@ -19,5 +19,5 @@ class BookCopiesView(APIView):
     def get(self, request, pk):
         book = get_object_or_404(Book, pk=pk)
         copies = book.copies.all()
-        serializer = BookCopySerializer(copies, many=True, context={'short_version': True})
+        serializer = BookCopySerializer(copies, many=True)
         return Response(serializer.data, status=200)
