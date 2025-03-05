@@ -35,3 +35,10 @@ class BookCopySerializer(serializers.ModelSerializer):
     def get_lending_history(self, obj):
         lendings = Lending.objects.filter(book_copy=obj).order_by('-borrowed_date')
         return LendingHistorySerializer(lendings, many=True).data
+
+class CopyShortSerializer(serializers.ModelSerializer):
+    book = BookShortSerializer(read_only=True)
+    class Meta:
+        model = Copy
+        fields = ['id', 'book', 'inventory_number']
+        read_only_fields = ['id', 'book']
