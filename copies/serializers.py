@@ -40,3 +40,10 @@ class BookCopySerializer(serializers.ModelSerializer):
     def get_lending_history(self, obj):
         lendings = Lending.objects.filter(book_copy=obj).order_by('-borrowed_date')
         return LendingHistorySerializer(lendings, many=True).data
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if self.context.get('short_version'):
+            data.pop('book_detail', None)
+        return data
