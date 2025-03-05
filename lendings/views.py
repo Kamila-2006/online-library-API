@@ -1,6 +1,6 @@
 from rest_framework import generics
 from .models import Lending
-from .serializers import LendingSerializer
+from .serializers import LendingSerializer, LendingOverdueSerializer
 from rest_framework import status
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
@@ -34,3 +34,9 @@ class LendingReturnView(APIView):
 
         serializer = LendingSerializer(lending)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class OverdueLendingsView(generics.ListAPIView):
+    serializer_class = LendingOverdueSerializer
+
+    def get_queryset(self):
+        return Lending.objects.filter(status='overdue')
