@@ -1,5 +1,4 @@
 from rest_framework import generics
-from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from .models import Author
 from .serializers import AuthorSerializer
@@ -20,5 +19,5 @@ class AuthorBooksView(APIView):
     def get(self, request, pk):
         author = get_object_or_404(Author, pk=pk)
         books = author.books.all()
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data, status=HTTP_200_OK)
+        serializer = BookSerializer(books, many=True, context={'short_version': True})
+        return Response(serializer.data, status=200)

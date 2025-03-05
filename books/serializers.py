@@ -17,11 +17,13 @@ class BookSerializer(serializers.ModelSerializer):
     genre = serializers.PrimaryKeyRelatedField(
         queryset = Genre.objects.all(),
     )
+
     authors = serializers.PrimaryKeyRelatedField(
         queryset = Author.objects.all(),
         many = True,
         required = True,
     )
+
     genre_detail = GenreSerializer(source='genre', read_only=True)
     authors_detail = AuthorSerializer(source='authors', many=True, read_only=True)
 
@@ -51,3 +53,10 @@ class BookSerializer(serializers.ModelSerializer):
     def get_copies_available(self, obj):
         return obj.copies.filter(is_available=True).count()
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if self.context.get('short_version'):
+            data.pop('authors_detail', None)
+            data.pop('genre_detail', None)
+        return data
